@@ -89,8 +89,12 @@
       align-items: center;
       justify-content: center;
       z-index: 1;
-      transition: transform 0.3s ease;
-      touch-action: pan-y;
+      touch-action: none;
+      will-change: transform;
+    }
+
+    .content-wrapper.animating {
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .content {
@@ -98,27 +102,27 @@
       padding: 2rem;
     }
 
-    .pull-indicator {
+    .pull-spinner {
       position: absolute;
-      top: 60px;
+      top: 80px;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scale(0);
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.2s, transform 0.2s;
     }
 
-    .pull-indicator.visible {
+    .pull-spinner.visible {
       opacity: 1;
+      transform: translateX(-50%) scale(1);
     }
 
-    .pull-indicator svg {
-      width: 24px;
-      height: 24px;
-      fill: rgba(255,255,255,0.7);
-    }
-
-    .pull-indicator.refreshing svg {
-      animation: spin 0.8s linear infinite;
+    .pull-spinner.refreshing {
+      animation: spin 0.7s linear infinite;
     }
 
     .temp {
@@ -364,14 +368,13 @@
     </div>
 
     <div class="content-wrapper"
+         :class="{ 'animating': !isDragging }"
          :style="`transform: translateY(${pullDistance}px)`"
          @touchstart="onTouchStart"
          @touchmove="onTouchMove"
          @touchend="onTouchEnd">
 
-      <div class="pull-indicator" :class="{ 'visible': pullDistance > 20, 'refreshing': isRefreshing }">
-        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-      </div>
+      <div class="pull-spinner" :class="{ 'visible': pullDistance > 30, 'refreshing': isRefreshing }"></div>
 
       <div class="content">
         <template x-if="loading">
@@ -466,6 +469,7 @@
         pullDistance: 0,
         touchStartY: 0,
         isRefreshing: false,
+        isDragging: false,
 
         // Popular cities
         popularCities: [
@@ -764,24 +768,27 @@
         onTouchStart(e) {
           if (this.modalOpen || this.isRefreshing) return
           this.touchStartY = e.touches[0].clientY
+          this.isDragging = true
         },
 
         onTouchMove(e) {
           if (this.modalOpen || this.isRefreshing) return
           const deltaY = e.touches[0].clientY - this.touchStartY
           if (deltaY > 0) {
-            this.pullDistance = Math.min(deltaY * 0.5, 100)
-          } else {
-            this.pullDistance = Math.max(deltaY * 0.3, -50)
+            // iOS-style resistance: diminishing returns as you pull further
+            this.pullDistance = Math.pow(deltaY, 0.75)
           }
         },
 
         async onTouchEnd() {
+          this.isDragging = false
           if (this.modalOpen) return
-          if (this.pullDistance > 60) {
+
+          if (this.pullDistance > 80) {
             this.isRefreshing = true
-            this.pullDistance = 60
+            this.pullDistance = 70
             await this.refresh()
+            await new Promise(r => setTimeout(r, 300))
             this.isRefreshing = false
           }
           this.pullDistance = 0
