@@ -1,0 +1,20 @@
+{
+  "name": "yesterday-weather",
+  "version": "0.1.0",
+  "description": "어제의 날씨 - 미니멀 날씨 기록 웹",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "hono": "^4.11.7"
+  }
+}
