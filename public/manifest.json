@@ -4,7 +4,7 @@
   "description": "어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a1a",
+  "background_color": "#d4cfc4",
   "theme_color": "#1a1a1a",
   "orientation": "portrait",
   "icons": [

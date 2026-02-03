@@ -9,7 +9,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1a1a1a">
+  <meta name="theme-color" content="#d4cfc4">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="어제날씨">
@@ -38,12 +38,14 @@
     }
 
     html, body {
-      position: fixed;
+      margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
       overscroll-behavior: none;
-      touch-action: none;
+      background-color: #d4cfc4;
     }
 
     body {
@@ -51,7 +53,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #1a1a1a;
       color: #fff;
     }
 
