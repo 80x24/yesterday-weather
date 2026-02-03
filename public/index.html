@@ -42,8 +42,8 @@
       padding: 0;
       width: 100%;
       height: 100%;
+      height: 100lvh;
       overflow: hidden;
-      overscroll-behavior: none;
       background-color: #d4cfc4;
     }
 
@@ -57,21 +57,15 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 100lvh;
     }
 
     .artwork {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: -10px;
+      left: -10px;
+      width: calc(100% + 20px);
+      height: calc(100lvh + 20px);
       background-size: cover;
       background-position: center;
       transition: opacity 0.5s ease;
@@ -85,13 +79,46 @@
       opacity: 0.7;
     }
 
-    .content {
-      position: relative;
+    .content-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 1;
+      transition: transform 0.3s ease;
+      touch-action: pan-y;
+    }
+
+    .content {
       text-align: center;
       padding: 2rem;
-      padding-top: calc(2rem + env(safe-area-inset-top));
-      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+    }
+
+    .pull-indicator {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .pull-indicator.visible {
+      opacity: 1;
+    }
+
+    .pull-indicator svg {
+      width: 24px;
+      height: 24px;
+      fill: rgba(255,255,255,0.7);
+    }
+
+    .pull-indicator.refreshing svg {
+      animation: spin 0.8s linear infinite;
     }
 
     .temp {
@@ -336,22 +363,33 @@
       <div class="loading-spinner"></div>
     </div>
 
-    <div class="content">
-      <template x-if="loading">
-        <div class="loading">...</div>
-      </template>
+    <div class="content-wrapper"
+         :style="`transform: translateY(${pullDistance}px)`"
+         @touchstart="onTouchStart"
+         @touchmove="onTouchMove"
+         @touchend="onTouchEnd">
 
-      <template x-if="error">
-        <div class="error" x-text="error"></div>
-      </template>
+      <div class="pull-indicator" :class="{ 'visible': pullDistance > 20, 'refreshing': isRefreshing }">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </div>
 
-      <template x-if="!loading && !error">
-        <div>
-          <div class="temp" @click="toggleUnit()" x-text="useCelsius ? `${tempC}°C` : `${tempF}°F`"></div>
-          <div class="location" @click="openModal()" x-text="city"></div>
-          <div class="date">YESTERDAY'S WEATHER</div>
-        </div>
-      </template>
+      <div class="content">
+        <template x-if="loading">
+          <div class="loading">...</div>
+        </template>
+
+        <template x-if="error">
+          <div class="error" x-text="error"></div>
+        </template>
+
+        <template x-if="!loading && !error">
+          <div>
+            <div class="temp" @click="toggleUnit()" x-text="useCelsius ? `${tempC}°C` : `${tempF}°F`"></div>
+            <div class="location" @click="openModal()" x-text="city"></div>
+            <div class="date">YESTERDAY'S WEATHER</div>
+          </div>
+        </template>
+      </div>
     </div>
 
     <!-- City Selection Modal -->
@@ -423,6 +461,11 @@
         searching: false,
         searchTimeout: null,
         fetchingWeather: false,
+
+        // Pull to refresh
+        pullDistance: 0,
+        touchStartY: 0,
+        isRefreshing: false,
 
         // Popular cities
         popularCities: [
@@ -716,6 +759,46 @@
         formatDate(dateStr) {
           const d = new Date(dateStr)
           return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+        },
+
+        onTouchStart(e) {
+          if (this.modalOpen || this.isRefreshing) return
+          this.touchStartY = e.touches[0].clientY
+        },
+
+        onTouchMove(e) {
+          if (this.modalOpen || this.isRefreshing) return
+          const deltaY = e.touches[0].clientY - this.touchStartY
+          if (deltaY > 0) {
+            this.pullDistance = Math.min(deltaY * 0.5, 100)
+          } else {
+            this.pullDistance = Math.max(deltaY * 0.3, -50)
+          }
+        },
+
+        async onTouchEnd() {
+          if (this.modalOpen) return
+          if (this.pullDistance > 60) {
+            this.isRefreshing = true
+            this.pullDistance = 60
+            await this.refresh()
+            this.isRefreshing = false
+          }
+          this.pullDistance = 0
+        },
+
+        async refresh() {
+          this.fetchingWeather = true
+          try {
+            const weather = await this.getWeather(this.currentLat, this.currentLon)
+            this.tempC = weather.tempC
+            this.tempF = weather.tempF
+            this.changeArtwork(weather.weatherType)
+            this.date = this.formatDate(weather.date)
+          } catch (err) {
+            this.error = err.message
+          }
+          this.fetchingWeather = false
         }
       }
     }
