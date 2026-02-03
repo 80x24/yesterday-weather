@@ -425,11 +425,6 @@
         tempC: 0,
         tempF: 0,
         city: '',
-        date: '',
-        weatherType: 'cloudy',
-        artworkBack: 'cloudy',
-        artworkFront: 'cloudy',
-        artworkFrontVisible: false,
         useCelsius: true,
         countryCode: '',
         currentLat: 0,
@@ -563,10 +558,8 @@
           const weather = await this.getWeather(c.lat, c.lon)
           this.tempC = weather.tempC
           this.tempF = weather.tempF
-          this.changeArtwork(weather.weatherType)
           this.city = c.name
           this.countryCode = c.countryCode
-          this.date = this.formatDate(weather.date)
           this.useCelsius = !['US', 'MM', 'LR'].includes(c.countryCode)
           this.currentLat = c.lat
           this.currentLon = c.lon
@@ -581,31 +574,13 @@
 
           this.tempC = weather.tempC
           this.tempF = weather.tempF
-          this.changeArtwork(weather.weatherType)
           this.city = cityName
           this.countryCode = countryCode
-          this.date = this.formatDate(weather.date)
-
-          // 미국, 버마, 라이베리아는 화씨 기본
           this.useCelsius = !['US', 'MM', 'LR'].includes(countryCode)
         },
 
         toggleUnit() {
           this.useCelsius = !this.useCelsius
-        },
-
-        changeArtwork(newType) {
-          if (newType === this.weatherType) return
-          this.weatherType = newType
-
-          // Crossfade
-          if (this.artworkFrontVisible) {
-            this.artworkBack = newType
-            this.artworkFrontVisible = false
-          } else {
-            this.artworkFront = newType
-            this.artworkFrontVisible = true
-          }
         },
 
         openModal() {
@@ -684,15 +659,12 @@
             const weather = await this.getWeather(c.lat, c.lon)
             this.tempC = weather.tempC
             this.tempF = weather.tempF
-            this.changeArtwork(weather.weatherType)
-            this.date = this.formatDate(weather.date)
             this.city = c.name
             this.countryCode = c.countryCode
             this.useCelsius = !['US', 'MM', 'LR'].includes(c.countryCode)
             this.currentLat = c.lat
             this.currentLon = c.lon
 
-            // localStorage에 저장
             localStorage.setItem('lastCity', JSON.stringify({
               name: c.name,
               country: c.country,
@@ -738,11 +710,6 @@
           return res.json()
         },
 
-        formatDate(dateStr) {
-          const d = new Date(dateStr)
-          return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-        },
-
         onTouchStart(e) {
           if (this.modalOpen || this.isRefreshing) return
           this.touchStartY = e.touches[0].clientY
@@ -780,8 +747,6 @@
             const weather = await this.getWeather(this.currentLat, this.currentLon)
             this.tempC = weather.tempC
             this.tempF = weather.tempF
-            this.changeArtwork(weather.weatherType)
-            this.date = this.formatDate(weather.date)
           } catch (err) {
             this.error = err.message
           }
