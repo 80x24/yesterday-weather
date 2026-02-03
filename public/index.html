@@ -37,22 +37,27 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #1a1a1a;
       color: #fff;
-      overflow: hidden;
     }
 
     .container {
-      position: relative;
-      width: 100%;
-      height: 100vh;
+      position: fixed;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -226,6 +231,8 @@
     .modal-body {
       max-height: calc(70vh - 80px);
       overflow-y: auto;
+      touch-action: pan-y;
+      overscroll-behavior: contain;
     }
 
     .modal-body::-webkit-scrollbar {
