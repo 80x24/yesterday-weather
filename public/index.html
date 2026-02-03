@@ -7,9 +7,26 @@
   <meta name="description" content="어제의 날씨는 사용자의 위치를 기준으로 어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹 프로젝트입니다.">
   <meta name="keywords" content="어제의 날씨, 어제 기온, 어제 몇 도였지, 지역별 어제 날씨">
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="어제날씨">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+
+  <!-- OG Tags -->
+  <meta property="og:title" content="어제의 날씨">
+  <meta property="og:description" content="어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -45,8 +62,15 @@
       inset: 0;
       background-size: cover;
       background-position: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .artwork-layer {
+      opacity: 0;
+    }
+
+    .artwork-layer.visible {
       opacity: 0.7;
-      transition: background-image 0.5s ease;
     }
 
     .content {
@@ -58,17 +82,17 @@
 
     .temp {
       font-size: clamp(4rem, 15vw, 12rem);
-      font-weight: 900;
+      font-weight: 700;
       line-height: 1;
       letter-spacing: -0.03em;
       text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.15s ease;
     }
 
-    .temp-alt {
-      font-size: clamp(1.5rem, 4vw, 3rem);
-      font-weight: 700;
-      opacity: 0.6;
-      margin-top: 0.5rem;
+    .temp:active {
+      opacity: 0.7;
     }
 
     .location {
@@ -78,6 +102,16 @@
       text-transform: uppercase;
       margin-top: 2rem;
       opacity: 0.8;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .location:hover {
+      opacity: 1;
+    }
+
+    .location:active {
+      opacity: 0.6;
     }
 
     .date {
@@ -97,11 +131,194 @@
       opacity: 0.7;
       max-width: 300px;
     }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      width: 90%;
+      max-width: 400px;
+      max-height: 70vh;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.open .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-search {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-family: inherit;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      outline: none;
+    }
+
+    .gps-btn {
+      width: 46px;
+      height: 46px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+
+    .gps-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .gps-btn:active {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .gps-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .modal-search::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .modal-body {
+      max-height: calc(70vh - 80px);
+      overflow-y: auto;
+    }
+
+    .modal-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .city-item {
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .city-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .city-item:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .city-name {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .city-country {
+      font-size: 13px;
+      opacity: 0.5;
+    }
+
+    .city-loading, .city-empty {
+      padding: 40px 20px;
+      text-align: center;
+      opacity: 0.5;
+      font-size: 14px;
+    }
+
+    .city-item.selected {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="container" x-data="weather()">
-    <div class="artwork" :style="`background-image: url('/images/${weatherType}.jpg')`"></div>
+    <div class="artwork artwork-layer" :class="{ 'visible': !artworkFrontVisible }" :style="`background-image: url('/images/${artworkBack}.jpg')`"></div>
+    <div class="artwork artwork-layer" :class="{ 'visible': artworkFrontVisible }" :style="`background-image: url('/images/${artworkFront}.jpg')`"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" :class="{ 'show': fetchingWeather }">
+      <div class="loading-spinner"></div>
+    </div>
 
     <div class="content">
       <template x-if="loading">
@@ -114,12 +331,54 @@
 
       <template x-if="!loading && !error">
         <div>
-          <div class="temp" x-text="`${tempC}°C`"></div>
-          <div class="temp-alt" x-text="`${tempF}°F`"></div>
-          <div class="location" x-text="city"></div>
-          <div class="date" x-text="date"></div>
+          <div class="temp" @click="toggleUnit()" x-text="useCelsius ? `${tempC}°C` : `${tempF}°F`"></div>
+          <div class="location" @click="openModal()" x-text="city"></div>
+          <div class="date">YESTERDAY'S WEATHER</div>
         </div>
       </template>
+    </div>
+
+    <!-- City Selection Modal -->
+    <div class="modal-overlay" :class="{ 'open': modalOpen }" @click.self="closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <input
+            type="text"
+            class="modal-search"
+            placeholder="Search city..."
+            x-model="searchQuery"
+            @input="debounceSearch()"
+            x-ref="searchInput"
+          >
+          <button class="gps-btn" @click="useCurrentLocation()" title="Use current location">
+            <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <template x-if="searching">
+            <div class="city-loading">Searching...</div>
+          </template>
+          <template x-if="!searching && searchQuery.length > 0 && searchResults.length === 0">
+            <div class="city-empty">No cities found</div>
+          </template>
+          <template x-if="!searching && searchQuery.length > 0">
+            <template x-for="c in searchResults" :key="c.place_id">
+              <div class="city-item" :class="{ 'selected': c.name === city }" @click="selectCity(c)">
+                <div class="city-name" x-text="c.name"></div>
+                <div class="city-country" x-text="c.country"></div>
+              </div>
+            </template>
+          </template>
+          <template x-if="!searching && searchQuery.length === 0">
+            <template x-for="c in popularCities" :key="c.name">
+              <div class="city-item" :class="{ 'selected': c.name === city }" @click="selectCity(c)">
+                <div class="city-name" x-text="c.name"></div>
+                <div class="city-country" x-text="c.country"></div>
+              </div>
+            </template>
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -133,23 +392,277 @@
         city: '',
         date: '',
         weatherType: 'cloudy',
+        artworkBack: 'cloudy',
+        artworkFront: 'cloudy',
+        artworkFrontVisible: false,
+        useCelsius: true,
+        countryCode: '',
+        currentLat: 0,
+        currentLon: 0,
+
+        // Modal state
+        modalOpen: false,
+        searchQuery: '',
+        searchResults: [],
+        searching: false,
+        searchTimeout: null,
+        fetchingWeather: false,
+
+        // Popular cities
+        popularCities: [
+          // Asia
+          { name: 'Seoul', country: 'South Korea', lat: 37.5665, lon: 126.9780, countryCode: 'KR' },
+          { name: 'Busan', country: 'South Korea', lat: 35.1796, lon: 129.0756, countryCode: 'KR' },
+          { name: 'Jeju', country: 'South Korea', lat: 33.4996, lon: 126.5312, countryCode: 'KR' },
+          { name: 'Tokyo', country: 'Japan', lat: 35.6762, lon: 139.6503, countryCode: 'JP' },
+          { name: 'Osaka', country: 'Japan', lat: 34.6937, lon: 135.5023, countryCode: 'JP' },
+          { name: 'Kyoto', country: 'Japan', lat: 35.0116, lon: 135.7681, countryCode: 'JP' },
+          { name: 'Fukuoka', country: 'Japan', lat: 33.5904, lon: 130.4017, countryCode: 'JP' },
+          { name: 'Beijing', country: 'China', lat: 39.9042, lon: 116.4074, countryCode: 'CN' },
+          { name: 'Shanghai', country: 'China', lat: 31.2304, lon: 121.4737, countryCode: 'CN' },
+          { name: 'Hong Kong', country: 'Hong Kong', lat: 22.3193, lon: 114.1694, countryCode: 'HK' },
+          { name: 'Taipei', country: 'Taiwan', lat: 25.0330, lon: 121.5654, countryCode: 'TW' },
+          { name: 'Singapore', country: 'Singapore', lat: 1.3521, lon: 103.8198, countryCode: 'SG' },
+          { name: 'Bangkok', country: 'Thailand', lat: 13.7563, lon: 100.5018, countryCode: 'TH' },
+          { name: 'Ho Chi Minh City', country: 'Vietnam', lat: 10.8231, lon: 106.6297, countryCode: 'VN' },
+          { name: 'Hanoi', country: 'Vietnam', lat: 21.0285, lon: 105.8542, countryCode: 'VN' },
+          { name: 'Manila', country: 'Philippines', lat: 14.5995, lon: 120.9842, countryCode: 'PH' },
+          { name: 'Jakarta', country: 'Indonesia', lat: -6.2088, lon: 106.8456, countryCode: 'ID' },
+          { name: 'Kuala Lumpur', country: 'Malaysia', lat: 3.1390, lon: 101.6869, countryCode: 'MY' },
+          { name: 'Mumbai', country: 'India', lat: 19.0760, lon: 72.8777, countryCode: 'IN' },
+          { name: 'Delhi', country: 'India', lat: 28.6139, lon: 77.2090, countryCode: 'IN' },
+          // Middle East
+          { name: 'Dubai', country: 'United Arab Emirates', lat: 25.2048, lon: 55.2708, countryCode: 'AE' },
+          { name: 'Abu Dhabi', country: 'United Arab Emirates', lat: 24.4539, lon: 54.3773, countryCode: 'AE' },
+          { name: 'Tel Aviv', country: 'Israel', lat: 32.0853, lon: 34.7818, countryCode: 'IL' },
+          { name: 'Istanbul', country: 'Turkey', lat: 41.0082, lon: 28.9784, countryCode: 'TR' },
+          // Europe
+          { name: 'London', country: 'United Kingdom', lat: 51.5074, lon: -0.1278, countryCode: 'GB' },
+          { name: 'Paris', country: 'France', lat: 48.8566, lon: 2.3522, countryCode: 'FR' },
+          { name: 'Berlin', country: 'Germany', lat: 52.5200, lon: 13.4050, countryCode: 'DE' },
+          { name: 'Munich', country: 'Germany', lat: 48.1351, lon: 11.5820, countryCode: 'DE' },
+          { name: 'Frankfurt', country: 'Germany', lat: 50.1109, lon: 8.6821, countryCode: 'DE' },
+          { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lon: 4.9041, countryCode: 'NL' },
+          { name: 'Brussels', country: 'Belgium', lat: 50.8503, lon: 4.3517, countryCode: 'BE' },
+          { name: 'Zurich', country: 'Switzerland', lat: 47.3769, lon: 8.5417, countryCode: 'CH' },
+          { name: 'Geneva', country: 'Switzerland', lat: 46.2044, lon: 6.1432, countryCode: 'CH' },
+          { name: 'Vienna', country: 'Austria', lat: 48.2082, lon: 16.3738, countryCode: 'AT' },
+          { name: 'Rome', country: 'Italy', lat: 41.9028, lon: 12.4964, countryCode: 'IT' },
+          { name: 'Milan', country: 'Italy', lat: 45.4642, lon: 9.1900, countryCode: 'IT' },
+          { name: 'Madrid', country: 'Spain', lat: 40.4168, lon: -3.7038, countryCode: 'ES' },
+          { name: 'Barcelona', country: 'Spain', lat: 41.3851, lon: 2.1734, countryCode: 'ES' },
+          { name: 'Lisbon', country: 'Portugal', lat: 38.7223, lon: -9.1393, countryCode: 'PT' },
+          { name: 'Stockholm', country: 'Sweden', lat: 59.3293, lon: 18.0686, countryCode: 'SE' },
+          { name: 'Copenhagen', country: 'Denmark', lat: 55.6761, lon: 12.5683, countryCode: 'DK' },
+          { name: 'Oslo', country: 'Norway', lat: 59.9139, lon: 10.7522, countryCode: 'NO' },
+          { name: 'Helsinki', country: 'Finland', lat: 60.1699, lon: 24.9384, countryCode: 'FI' },
+          { name: 'Prague', country: 'Czech Republic', lat: 50.0755, lon: 14.4378, countryCode: 'CZ' },
+          { name: 'Warsaw', country: 'Poland', lat: 52.2297, lon: 21.0122, countryCode: 'PL' },
+          { name: 'Budapest', country: 'Hungary', lat: 47.4979, lon: 19.0402, countryCode: 'HU' },
+          { name: 'Athens', country: 'Greece', lat: 37.9838, lon: 23.7275, countryCode: 'GR' },
+          { name: 'Dublin', country: 'Ireland', lat: 53.3498, lon: -6.2603, countryCode: 'IE' },
+          { name: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lon: -3.1883, countryCode: 'GB' },
+          { name: 'Moscow', country: 'Russia', lat: 55.7558, lon: 37.6173, countryCode: 'RU' },
+          // North America
+          { name: 'New York', country: 'United States', lat: 40.7128, lon: -74.0060, countryCode: 'US' },
+          { name: 'Los Angeles', country: 'United States', lat: 34.0522, lon: -118.2437, countryCode: 'US' },
+          { name: 'San Francisco', country: 'United States', lat: 37.7749, lon: -122.4194, countryCode: 'US' },
+          { name: 'Chicago', country: 'United States', lat: 41.8781, lon: -87.6298, countryCode: 'US' },
+          { name: 'Seattle', country: 'United States', lat: 47.6062, lon: -122.3321, countryCode: 'US' },
+          { name: 'Miami', country: 'United States', lat: 25.7617, lon: -80.1918, countryCode: 'US' },
+          { name: 'Boston', country: 'United States', lat: 42.3601, lon: -71.0589, countryCode: 'US' },
+          { name: 'Washington D.C.', country: 'United States', lat: 38.9072, lon: -77.0369, countryCode: 'US' },
+          { name: 'Las Vegas', country: 'United States', lat: 36.1699, lon: -115.1398, countryCode: 'US' },
+          { name: 'Honolulu', country: 'United States', lat: 21.3069, lon: -157.8583, countryCode: 'US' },
+          { name: 'Toronto', country: 'Canada', lat: 43.6532, lon: -79.3832, countryCode: 'CA' },
+          { name: 'Vancouver', country: 'Canada', lat: 49.2827, lon: -123.1207, countryCode: 'CA' },
+          { name: 'Montreal', country: 'Canada', lat: 45.5017, lon: -73.5673, countryCode: 'CA' },
+          { name: 'Mexico City', country: 'Mexico', lat: 19.4326, lon: -99.1332, countryCode: 'MX' },
+          // South America
+          { name: 'São Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333, countryCode: 'BR' },
+          { name: 'Rio de Janeiro', country: 'Brazil', lat: -22.9068, lon: -43.1729, countryCode: 'BR' },
+          { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lon: -58.3816, countryCode: 'AR' },
+          { name: 'Santiago', country: 'Chile', lat: -33.4489, lon: -70.6693, countryCode: 'CL' },
+          { name: 'Lima', country: 'Peru', lat: -12.0464, lon: -77.0428, countryCode: 'PE' },
+          { name: 'Bogotá', country: 'Colombia', lat: 4.7110, lon: -74.0721, countryCode: 'CO' },
+          // Oceania
+          { name: 'Sydney', country: 'Australia', lat: -33.8688, lon: 151.2093, countryCode: 'AU' },
+          { name: 'Melbourne', country: 'Australia', lat: -37.8136, lon: 144.9631, countryCode: 'AU' },
+          { name: 'Brisbane', country: 'Australia', lat: -27.4698, lon: 153.0251, countryCode: 'AU' },
+          { name: 'Auckland', country: 'New Zealand', lat: -36.8509, lon: 174.7645, countryCode: 'NZ' },
+          // Africa
+          { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357, countryCode: 'EG' },
+          { name: 'Cape Town', country: 'South Africa', lat: -33.9249, lon: 18.4241, countryCode: 'ZA' },
+          { name: 'Johannesburg', country: 'South Africa', lat: -26.2041, lon: 28.0473, countryCode: 'ZA' },
+          { name: 'Nairobi', country: 'Kenya', lat: -1.2921, lon: 36.8219, countryCode: 'KE' },
+          { name: 'Lagos', country: 'Nigeria', lat: 6.5244, lon: 3.3792, countryCode: 'NG' },
+          { name: 'Casablanca', country: 'Morocco', lat: 33.5731, lon: -7.5898, countryCode: 'MA' },
+        ],
 
         async init() {
+          this.fetchingWeather = true
           try {
-            const pos = await this.getLocation()
-            const cityName = await this.getCityName(pos.lat, pos.lon)
-            const weather = await this.getWeather(pos.lat, pos.lon)
-
-            this.tempC = weather.tempC
-            this.tempF = weather.tempF
-            this.weatherType = weather.weatherType
-            this.city = cityName
-            this.date = this.formatDate(weather.date)
-            this.loading = false
+            // localStorage에서 마지막 선택 도시 확인
+            const saved = localStorage.getItem('lastCity')
+            if (saved) {
+              const city = JSON.parse(saved)
+              await this.loadWeatherForCity(city)
+            } else {
+              const pos = await this.getLocation()
+              await this.loadWeatherForLocation(pos.lat, pos.lon)
+            }
           } catch (err) {
             this.error = err.message || '날씨 정보를 불러올 수 없습니다'
-            this.loading = false
           }
+          this.loading = false
+          this.fetchingWeather = false
+        },
+
+        async loadWeatherForCity(c) {
+          const weather = await this.getWeather(c.lat, c.lon)
+          this.tempC = weather.tempC
+          this.tempF = weather.tempF
+          this.changeArtwork(weather.weatherType)
+          this.city = c.name
+          this.countryCode = c.countryCode
+          this.date = this.formatDate(weather.date)
+          this.useCelsius = !['US', 'MM', 'LR'].includes(c.countryCode)
+          this.currentLat = c.lat
+          this.currentLon = c.lon
+        },
+
+        async loadWeatherForLocation(lat, lon) {
+          this.currentLat = lat
+          this.currentLon = lon
+
+          const { cityName, countryCode } = await this.getCityName(lat, lon)
+          const weather = await this.getWeather(lat, lon)
+
+          this.tempC = weather.tempC
+          this.tempF = weather.tempF
+          this.changeArtwork(weather.weatherType)
+          this.city = cityName
+          this.countryCode = countryCode
+          this.date = this.formatDate(weather.date)
+
+          // 미국, 버마, 라이베리아는 화씨 기본
+          this.useCelsius = !['US', 'MM', 'LR'].includes(countryCode)
+        },
+
+        toggleUnit() {
+          this.useCelsius = !this.useCelsius
+        },
+
+        changeArtwork(newType) {
+          if (newType === this.weatherType) return
+          this.weatherType = newType
+
+          // Crossfade
+          if (this.artworkFrontVisible) {
+            this.artworkBack = newType
+            this.artworkFrontVisible = false
+          } else {
+            this.artworkFront = newType
+            this.artworkFrontVisible = true
+          }
+        },
+
+        openModal() {
+          this.modalOpen = true
+          this.searchQuery = ''
+          this.searchResults = []
+          this.$nextTick(() => {
+            this.$refs.searchInput?.focus()
+          })
+        },
+
+        closeModal() {
+          this.modalOpen = false
+        },
+
+        async useCurrentLocation() {
+          this.closeModal()
+          this.fetchingWeather = true
+
+          try {
+            const pos = await this.getLocation()
+            await this.loadWeatherForLocation(pos.lat, pos.lon)
+            // localStorage 초기화 (현재 위치 사용시)
+            localStorage.removeItem('lastCity')
+          } catch (err) {
+            this.error = err.message || '위치 정보를 가져올 수 없습니다'
+          }
+
+          this.fetchingWeather = false
+        },
+
+        debounceSearch() {
+          clearTimeout(this.searchTimeout)
+          if (this.searchQuery.length < 1) {
+            this.searchResults = []
+            return
+          }
+          this.searchTimeout = setTimeout(() => {
+            this.searchCities()
+          }, 300)
+        },
+
+        async searchCities() {
+          if (this.searchQuery.length < 1) return
+
+          this.searching = true
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(this.searchQuery)}&format=json&limit=10&accept-language=en&addressdetails=1`
+            )
+            const data = await res.json()
+
+            this.searchResults = data
+              .filter(item => item.type === 'city' || item.type === 'town' || item.type === 'village' || item.type === 'administrative' || item.class === 'place')
+              .map(item => ({
+                place_id: item.place_id,
+                name: item.address?.city || item.address?.town || item.address?.village || item.name,
+                country: item.address?.country || '',
+                lat: parseFloat(item.lat),
+                lon: parseFloat(item.lon),
+                countryCode: item.address?.country_code?.toUpperCase() || ''
+              }))
+              .filter((v, i, a) => a.findIndex(t => t.name === v.name && t.country === v.country) === i)
+              .slice(0, 8)
+          } catch {
+            this.searchResults = []
+          }
+          this.searching = false
+        },
+
+        async selectCity(c) {
+          this.closeModal()
+          this.fetchingWeather = true
+
+          try {
+            const weather = await this.getWeather(c.lat, c.lon)
+            this.tempC = weather.tempC
+            this.tempF = weather.tempF
+            this.changeArtwork(weather.weatherType)
+            this.date = this.formatDate(weather.date)
+            this.city = c.name
+            this.countryCode = c.countryCode
+            this.useCelsius = !['US', 'MM', 'LR'].includes(c.countryCode)
+            this.currentLat = c.lat
+            this.currentLon = c.lon
+
+            // localStorage에 저장
+            localStorage.setItem('lastCity', JSON.stringify({
+              name: c.name,
+              country: c.country,
+              lat: c.lat,
+              lon: c.lon,
+              countryCode: c.countryCode
+            }))
+          } catch (err) {
+            this.error = err.message || '날씨 데이터를 가져올 수 없습니다'
+          }
+          this.fetchingWeather = false
         },
 
         getLocation() {
@@ -168,11 +681,13 @@
 
         async getCityName(lat, lon) {
           try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`)
             const data = await res.json()
-            return data.address?.city || data.address?.town || data.address?.county || 'Unknown'
+            const cityName = data.address?.city || data.address?.town || data.address?.county || 'Unknown'
+            const countryCode = data.address?.country_code?.toUpperCase() || ''
+            return { cityName, countryCode }
           } catch {
-            return 'Unknown'
+            return { cityName: 'Unknown', countryCode: '' }
           }
         },
 
@@ -187,6 +702,11 @@
           return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
         }
       }
+    }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
     }
   </script>
 </body>
