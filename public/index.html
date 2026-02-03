@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>어제의 날씨 | 지역별 어제 기온과 날씨 기록</title>
   <meta name="description" content="어제의 날씨는 사용자의 위치를 기준으로 어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹 프로젝트입니다.">
   <meta name="keywords" content="어제의 날씨, 어제 기온, 어제 몇 도였지, 지역별 어제 날씨">
@@ -40,6 +40,7 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -78,6 +79,8 @@
       z-index: 1;
       text-align: center;
       padding: 2rem;
+      padding-top: calc(2rem + env(safe-area-inset-top));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
     }
 
     .temp {
