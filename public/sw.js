@@ -2,12 +2,6 @@ const CACHE_NAME = 'yesterday-weather-v1'
 const ASSETS = [
   '/',
   '/manifest.json',
-  '/images/clear.jpg',
-  '/images/cloudy.jpg',
-  '/images/fog.jpg',
-  '/images/rain.jpg',
-  '/images/snow.jpg',
-  '/images/storm.jpg',
 ]
 
 self.addEventListener('install', (e) => {
