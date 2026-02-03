@@ -774,9 +774,11 @@
         onTouchMove(e) {
           if (this.modalOpen || this.isRefreshing) return
           const deltaY = e.touches[0].clientY - this.touchStartY
+          // iOS-style resistance: diminishing returns as you pull further
           if (deltaY > 0) {
-            // iOS-style resistance: diminishing returns as you pull further
             this.pullDistance = Math.pow(deltaY, 0.75)
+          } else {
+            this.pullDistance = -Math.pow(Math.abs(deltaY), 0.75)
           }
         },
 
