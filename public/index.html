@@ -29,6 +29,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@khmyznikov/pwa-install/dist/pwa-install.bundle.js"></script>
 
   <style>
     * {
@@ -44,7 +45,8 @@
       height: 100%;
       height: 100lvh;
       overflow: hidden;
-      background-color: #1a1a1a;
+      background-color: var(--bg, #1a1a1a);
+      transition: background-color 1.5s ease;
     }
 
     body {
@@ -299,6 +301,41 @@
       font-size: 14px;
     }
 
+    /* Install button */
+    .install-btn {
+      position: fixed;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+
+    .install-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    .install-btn:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+
+    /* Hide when in standalone mode (already installed) */
+    @media (display-mode: standalone) {
+      .install-btn {
+        display: none;
+      }
+    }
+
     .city-item.selected {
       background: rgba(255, 255, 255, 0.15);
     }
@@ -373,6 +410,16 @@
       </div>
     </div>
 
+    <!-- Install Button -->
+    <button class="install-btn" @click="$refs.pwaInstall.showDialog(true)">앱 설치</button>
+    <pwa-install
+      x-ref="pwaInstall"
+      manifest-url="/manifest.json"
+      name="어제의 날씨"
+      description="어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹"
+      icon="/icons/icon-512.png"
+    ></pwa-install>
+
     <!-- City Selection Modal -->
     <div class="modal-overlay" :class="{ 'open': modalOpen }" @click.self="closeModal()">
       <div class="modal">
@@ -424,6 +471,7 @@
         error: null,
         tempC: 0,
         tempF: 0,
+        weatherType: '',
         city: '',
         useCelsius: true,
         countryCode: '',
@@ -563,6 +611,7 @@
           this.useCelsius = !['US', 'MM', 'LR'].includes(c.countryCode)
           this.currentLat = c.lat
           this.currentLon = c.lon
+          this.applyWeatherBg(weather.weatherType)
         },
 
         async loadWeatherForLocation(lat, lon) {
@@ -577,6 +626,7 @@
           this.city = cityName
           this.countryCode = countryCode
           this.useCelsius = !['US', 'MM', 'LR'].includes(countryCode)
+          this.applyWeatherBg(weather.weatherType)
         },
 
         toggleUnit() {
@@ -672,6 +722,7 @@
               lon: c.lon,
               countryCode: c.countryCode
             }))
+            this.applyWeatherBg(weather.weatherType)
           } catch (err) {
             this.error = err.message || '날씨 데이터를 가져올 수 없습니다'
           }
@@ -747,10 +798,23 @@
             const weather = await this.getWeather(this.currentLat, this.currentLon)
             this.tempC = weather.tempC
             this.tempF = weather.tempF
+            this.applyWeatherBg(weather.weatherType)
           } catch (err) {
             this.error = err.message
           }
           this.fetchingWeather = false
+        },
+
+        applyWeatherBg(type) {
+          const colors = {
+            clear:  '#1f1a15',
+            cloudy: '#1a1a1e',
+            fog:    '#1c1c20',
+            rain:   '#151a20',
+            snow:   '#1a1e24',
+            storm:  '#14131a',
+          }
+          document.documentElement.style.setProperty('--bg', colors[type] || '#1a1a1a')
         }
       }
     }
