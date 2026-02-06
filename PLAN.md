@@ -5,7 +5,7 @@
 - 기본 기능 완성: 어제 날씨 조회, 도시 검색, PWA 지원
 - Bun + Hono + Alpine.js 스택
 - Open-Meteo Archive API (무료, 키 불필요)
-- Fly.io (nrt) 배포 — 현재 stopped
+- Fly.io (nrt) 배포 — 가동 중 (https://yesterday-weather.fly.dev/)
 
 ## 철학
 
