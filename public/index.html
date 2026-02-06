@@ -808,12 +808,12 @@
 
         applyWeatherBg(type) {
           const themes = {
-            clear:  { color: '#1f1a15', gradient: 'radial-gradient(ellipse at 50% 0%, #2a2318 0%, #1f1a15 70%)' },
-            cloudy: { color: '#1a1a1e', gradient: 'linear-gradient(to bottom, #1e1e24 0%, #1a1a1e 60%, #161618 100%)' },
-            fog:    { color: '#1c1c20', gradient: 'radial-gradient(ellipse at 50% 50%, #22222a 0%, #1c1c20 80%)' },
-            rain:   { color: '#151a20', gradient: 'linear-gradient(to bottom, #121820 0%, #151a20 40%, #0f151c 100%)' },
-            snow:   { color: '#1a1e24', gradient: 'radial-gradient(ellipse at 50% 20%, #222840 0%, #1a1e24 70%)' },
-            storm:  { color: '#14131a', gradient: 'linear-gradient(to bottom, #18152a 0%, #14131a 50%, #0e0d14 100%)' },
+            clear:  { color: '#1a1408', gradient: 'radial-gradient(ellipse at 50% 0%, #3d2e10 0%, #1a1408 70%)' },
+            cloudy: { color: '#181a22', gradient: 'linear-gradient(to bottom, #252838 0%, #181a22 60%, #111218 100%)' },
+            fog:    { color: '#1e1c22', gradient: 'radial-gradient(ellipse at 50% 50%, #2e2a38 0%, #1e1c22 80%)' },
+            rain:   { color: '#0e1820', gradient: 'linear-gradient(to bottom, #0c1e2e 0%, #0e1820 40%, #081018 100%)' },
+            snow:   { color: '#182030', gradient: 'radial-gradient(ellipse at 50% 20%, #283858 0%, #182030 70%)' },
+            storm:  { color: '#14101e', gradient: 'linear-gradient(to bottom, #221838 0%, #14101e 50%, #0a0810 100%)' },
           }
           const theme = themes[type] || { color: '#1a1a1a', gradient: 'none' }
           const root = document.documentElement.style
