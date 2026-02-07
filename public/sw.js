@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yesterday-weather-v1'
+const CACHE_NAME = 'yesterday-weather-v6'
 const ASSETS = [
   '/',
   '/manifest.json',
@@ -21,15 +21,29 @@ self.addEventListener('activate', (e) => {
 })
 
 self.addEventListener('fetch', (e) => {
-  // API 요청은 네트워크 우선
-  if (e.request.url.includes('/api/')) {
+  const url = new URL(e.request.url)
+
+  // API: 네트워크 우선
+  if (url.pathname.startsWith('/api/')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     )
     return
   }
 
-  // 그 외는 캐시 우선
+  // 네비게이션 (HTML): 네트워크 우선 + 캐시 갱신
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then((res) => {
+        const clone = res.clone()
+        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
+        return res
+      }).catch(() => caches.match(e.request))
+    )
+    return
+  }
+
+  // 그 외 정적 자산: 캐시 우선
   e.respondWith(
     caches.match(e.request).then((cached) => cached || fetch(e.request))
   )

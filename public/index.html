@@ -14,13 +14,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="어제날씨">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 
   <!-- OG Tags -->
   <meta property="og:title" content="어제의 날씨">
   <meta property="og:description" content="어제의 기온과 날씨를 기록처럼 보여주는 미니멀 웹">
-  <meta property="og:image" content="/icons/icon-512.png">
+  <meta property="og:image" content="/og">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
 
@@ -68,7 +68,7 @@
       text-align: center;
       padding: 2rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
     }
 
     /* Pull spinner */
@@ -84,79 +84,88 @@
     .pull-spinner.visible { opacity: 1; transform: translateX(-50%) scale(1); }
     .pull-spinner.refreshing { animation: spin 0.7s linear infinite; }
 
-    /* Time */
-    .time {
-      font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-      font-weight: 400;
-      letter-spacing: 0.05em;
+    /* Location */
+    .location {
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
       opacity: 0.5;
-      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+      margin-bottom: 2.5rem;
     }
+    .location:hover { opacity: 0.8; }
+    .location:active { opacity: 0.3; }
 
-    /* Today section */
-    .today-temp {
-      font-size: clamp(5rem, 18vw, 14rem);
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.04em;
+    /* Two-column weather */
+    .weather-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(1.5rem, 6vw, 4rem);
       cursor: pointer;
       user-select: none;
-      transition: opacity 0.15s ease;
-    }
-    .today-temp:active { opacity: 0.7; }
-
-    .today-detail {
-      font-size: clamp(0.95rem, 2.8vw, 1.3rem);
-      font-weight: 500;
-      margin-top: 0.6rem;
-      opacity: 0.7;
-      letter-spacing: 0.02em;
     }
 
-    .today-range {
-      font-weight: 300;
-      opacity: 0.5;
+    .weather-col {
+      text-align: center;
+      flex: 0 0 auto;
     }
 
-    /* Divider */
-    .divider {
-      width: 40px;
-      height: 1px;
-      background: var(--text, #fff);
-      opacity: 0.15;
-      margin: 1.8rem auto;
-    }
-
-    /* Yesterday section */
-    .yesterday {
-      font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-      opacity: 0.45;
+    .col-label {
+      font-size: clamp(0.65rem, 1.8vw, 0.8rem);
       font-weight: 400;
-      letter-spacing: 0.03em;
-    }
-
-    .yesterday-label {
-      font-weight: 300;
-      font-size: 0.8em;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      opacity: 0.7;
+      letter-spacing: 0.2em;
+      opacity: 0.4;
       margin-bottom: 0.3rem;
     }
 
-    /* Location */
-    .location {
-      font-size: clamp(0.85rem, 2.5vw, 1.5rem);
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-top: 2rem;
-      opacity: 0.6;
-      cursor: pointer;
+    .col-temp {
+      font-size: clamp(3.5rem, 14vw, 8rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
       transition: opacity 0.15s ease;
     }
-    .location:hover { opacity: 0.9; }
-    .location:active { opacity: 0.4; }
+    .weather-row:active .col-temp { opacity: 0.7; }
+
+    .col-unit {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      font-weight: 300;
+      opacity: 0.4;
+      vertical-align: super;
+    }
+
+    /* Separator dot */
+    .separator {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.2;
+      flex-shrink: 0;
+    }
+
+    /* Temperature difference */
+    .temp-diff {
+      margin-top: 1.5rem;
+      font-size: clamp(0.8rem, 2.2vw, 1rem);
+      font-weight: 500;
+      opacity: 0.55;
+      letter-spacing: 0.02em;
+    }
+
+    /* Branding */
+    .branding {
+      margin-top: 3rem;
+      font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: lowercase;
+      opacity: 0.2;
+    }
 
     .loading { font-size: 1.5rem; opacity: 0.5; }
     .error { font-size: 1rem; opacity: 0.7; max-width: 300px; }
@@ -305,31 +314,30 @@
 
         <template x-if="!loading && !error">
           <div>
-            <!-- Current time -->
-            <div class="time" x-text="timeLabel"></div>
-
-            <!-- Today -->
-            <div class="today-temp" @click="toggleUnit()"
-                 x-text="useCelsius ? `${today.tempC}°` : `${today.tempF}°`"></div>
-            <div class="today-detail">
-              <span x-text="weatherLabel(today.weatherType)"></span>
-              <span class="today-range"
-                    x-text="useCelsius ? ` · ${today.high}° / ${today.low}°` : ` · ${today.highF}° / ${today.lowF}°`"></span>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Yesterday -->
-            <div class="yesterday">
-              <div class="yesterday-label">어제</div>
-              <span x-text="useCelsius ? `${yesterday.tempC}°` : `${yesterday.tempF}°`"></span>
-              <span x-text="weatherLabel(yesterday.weatherType)"></span>
-              <span class="today-range"
-                    x-text="useCelsius ? ` · ${yesterday.high}° / ${yesterday.low}°` : ` · ${yesterday.highF}° / ${yesterday.lowF}°`"></span>
-            </div>
-
-            <!-- Location -->
             <div class="location" @click="openModal()" x-text="city"></div>
+
+            <div class="weather-row" @click="toggleUnit()">
+              <div class="weather-col">
+                <div class="col-label">어제</div>
+                <div class="col-temp">
+                  <span x-text="useCelsius ? yesterday.tempC : yesterday.tempF"></span><span class="col-unit" x-text="useCelsius ? '°C' : '°F'"></span>
+                </div>
+              </div>
+
+              <div class="separator"></div>
+
+              <div class="weather-col">
+                <div class="col-label">오늘</div>
+                <div class="col-temp">
+                  <span x-text="useCelsius ? today.tempC : today.tempF"></span><span class="col-unit" x-text="useCelsius ? '°C' : '°F'"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="temp-diff" @click="toggleUnit()"
+                 x-text="tempDiffText()"></div>
+
+            <div class="branding">yesterday's weather</div>
           </div>
         </template>
       </div>
@@ -388,9 +396,8 @@
       return {
         loading: true,
         error: null,
-        today: { tempC: 0, tempF: 0, high: 0, highF: 0, low: 0, lowF: 0, weatherType: '' },
-        yesterday: { tempC: 0, tempF: 0, high: 0, highF: 0, low: 0, lowF: 0, weatherType: '' },
-        timeLabel: '',
+        today: { tempC: 0, tempF: 0, weatherType: '' },
+        yesterday: { tempC: 0, tempF: 0, weatherType: '' },
         city: '',
         useCelsius: true,
         countryCode: '',
@@ -450,7 +457,7 @@
           { name: 'Vancouver', country: 'Canada', lat: 49.2827, lon: -123.1207, countryCode: 'CA' },
           { name: 'Sydney', country: 'Australia', lat: -33.8688, lon: 151.2093, countryCode: 'AU' },
           { name: 'Melbourne', country: 'Australia', lat: -37.8136, lon: 144.9631, countryCode: 'AU' },
-          { name: 'São Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333, countryCode: 'BR' },
+          { name: 'S\u00e3o Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333, countryCode: 'BR' },
           { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lon: -58.3816, countryCode: 'AR' },
           { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357, countryCode: 'EG' },
           { name: 'Cape Town', country: 'South Africa', lat: -33.9249, lon: 18.4241, countryCode: 'ZA' },
@@ -471,25 +478,6 @@
 
         weatherLabel(type) {
           return this.weatherLabels[type] || type || ''
-        },
-
-        formatTime(isoTime) {
-          if (!isoTime) return ''
-          const d = new Date(isoTime)
-          if (isNaN(d.getTime())) {
-            // Parse "2026-02-07T14:30" format manually
-            const parts = isoTime.split('T')
-            if (parts.length < 2) return ''
-            const [hh] = parts[1].split(':').map(Number)
-            return this._formatHour(hh)
-          }
-          return this._formatHour(d.getHours())
-        },
-
-        _formatHour(h) {
-          const period = h < 12 ? '오전' : '오후'
-          const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h
-          return `${period} ${displayH}시`
         },
 
         async init() {
@@ -529,11 +517,20 @@
           this.city = cityName
           this.countryCode = countryCode
           this.useCelsius = !['US', 'MM', 'LR'].includes(countryCode)
-          this.timeLabel = this.formatTime(data.currentTime)
           this.applyTheme(data.today.weatherType)
         },
 
         toggleUnit() { this.useCelsius = !this.useCelsius },
+
+        tempDiffText() {
+          const todayT = this.useCelsius ? this.today.tempC : this.today.tempF
+          const yesterdayT = this.useCelsius ? this.yesterday.tempC : this.yesterday.tempF
+          const diff = todayT - yesterdayT
+          const unit = this.useCelsius ? '°C' : '°F'
+          if (diff === 0) return '어제와 같은 온도'
+          const arrow = diff > 0 ? '↑' : '↓'
+          return `어제보다 ${Math.abs(diff)}${unit} ${diff > 0 ? '높음' : '낮음'} ${arrow}`
+        },
 
         openModal() {
           this.modalOpen = true
@@ -665,7 +662,6 @@
             const data = await this.fetchWeather(this.currentLat, this.currentLon)
             this.today = data.today
             this.yesterday = data.yesterday
-            this.timeLabel = this.formatTime(data.currentTime)
             this.applyTheme(data.today.weatherType)
           } catch (err) { this.error = err.message }
           this.fetchingWeather = false
@@ -677,7 +673,6 @@
           root.setProperty('--bg', theme.bg)
           root.setProperty('--bg-gradient', theme.gradient)
           root.setProperty('--text', theme.text)
-          // Update theme-color meta for PWA
           document.getElementById('themeColor')?.setAttribute('content', theme.bg)
         }
       }
@@ -685,6 +680,11 @@
   </script>
   <script>
     if ('serviceWorker' in navigator) {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload()
+        })
+      }
       navigator.serviceWorker.register('/sw.js')
     }
   </script>
